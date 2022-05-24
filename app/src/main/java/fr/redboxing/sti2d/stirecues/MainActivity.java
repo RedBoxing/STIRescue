@@ -39,7 +39,6 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private static final UUID BT_MODULE_UUID = UUID.fromString("d052b734-5ba8-4e4a-ae17-27a15dddf829");
-    private static String ROBOT_ADDR = "49:e4:9b:50:ec:95";
     private final static int REQUEST_ENABLE_BT = 1;
 
     private BluetoothAdapter adapter;
@@ -69,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         this.frameLayout = this.findViewById(R.id.frameLayout);
         this.joystickView = this.findViewById(R.id.joystick);
 
-        ROBOT_ADDR = ((EditText) this.findViewById(R.id.macfield)).getText().toString();
 
         HandsOptions handsOptions = HandsOptions.builder()
                 .setModelComplexity(1)
@@ -93,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", landmarkList.toString());
 
                 JsonObject json = new JsonObject();
-                json.addProperty("type", "CLAMP_POS");
+                json.addProperty("type", "MOVE_CLAMP");
                 json.addProperty("pos", true);
                 //MainActivity.this.connectThread.write(json);
             }
@@ -107,24 +105,26 @@ public class MainActivity extends AppCompatActivity {
         if(!this.adapter.isEnabled()) {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             this.startActivityForResult(intent, REQUEST_ENABLE_BT);
+            return;
         }
 
         this.devices = this.adapter.getBondedDevices();
         this.devices.forEach(d -> {
             Log.e("MainActivity", "Name: " + d.getName() + ", MAC: " + d.getAddress());
         });
-        Optional<BluetoothDevice> optional = this.devices.stream().filter(d -> d.getAddress().equals(ROBOT_ADDR)).findFirst();
+        Optional<BluetoothDevice> optional = this.devices.stream().filter(d -> d.getName().equals("HC-05 TEE")).findFirst();
         if(!optional.isPresent()) {
+            Log.e("MainActivity", "Bluetooth device is not linked !");
             Toast.makeText(this, "Vous devez appairer le robot dans les paramètres bluetooth !", Toast.LENGTH_LONG).show();
-           // return;
+            return;
         }
 
-        //BluetoothDevice device = optional.get();
+        BluetoothDevice device = optional.get();
 
-      //  this.textView.setText("Appareille: " + device.getAddress());
+        this.textView.setText("Appareil: " + device.getAddress());
 
-       // this.connectThread = new ConnectThread(device);
-      //  this.connectThread.start();
+        this.connectThread = new ConnectThread(device);
+        this.connectThread.start();
 
         this.openClampBtn.setOnClickListener(v -> {
             JsonObject json = new JsonObject();
@@ -143,18 +143,16 @@ public class MainActivity extends AppCompatActivity {
         this.moveClampForwardBtn.setOnClickListener(v -> {
             JsonObject json = new JsonObject();
             json.addProperty("type", "MOVE_CLAMP");
-            json.addProperty("value", "forward");
+            json.addProperty("value", "up");
             MainActivity.this.connectThread.write(json);
         });
 
         this.moveClampBackwardBtn.setOnClickListener(v -> {
             JsonObject json = new JsonObject();
             json.addProperty("type", "MOVE_CLAMP");
-            json.addProperty("value", "backward");
+            json.addProperty("value", "down");
             MainActivity.this.connectThread.write(json);
         });
-
-        Log.i("MainActivity", "bbbbbbbbbbbbb");
 
         this.secretModeSwitch.setOnClickListener(sw -> {
             Log.i("MainActivity", "aaaa");
@@ -169,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 handsView.post(cameraInput::close);
                 this.frameLayout.removeAllViewsInLayout();
+                handsView.setVisibility(View.GONE);
                 frameLayout.requestLayout();
             }
         });
