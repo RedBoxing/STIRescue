@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">STIRescue</string>
+    <string name="device">Appareille : </string>
+    <string name="clamp_control">Control de la pince: </string>
+    <string name="open_clamp">Ouvrir</string>
+    <string name="close_clamp">Fermer</string>
+    <string name="move_clamp_forward">Avancer</string>
+    <string name="move_clamp_backward">Reculer</string>
+    <string name="secret_mode">Secret Mode</string>
+</resources>

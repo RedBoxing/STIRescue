@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <TextView
+            android:text="@string/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="16dp" android:textStyle="bold|italic" android:textSize="24sp"/>
+    <TextView
+            android:text="@string/device"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textView2"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="64dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp" android:textSize="16sp"/>
+    <TextView
+            android:text="@string/clamp_control"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/textView4"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="128dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp" android:textSize="16sp"/>
+
+    <Button
+        android:id="@+id/open_clamp_btn"
+        android:layout_width="101dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="164dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/open_clamp"
+        app:layout_constraintEnd_toStartOf="@+id/close_clamp_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <Button
+            android:text="@string/close_clamp"
+            android:layout_width="104dp"
+            android:layout_height="52dp" android:id="@+id/close_clamp_btn"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="164dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="132dp"/>
+    <Button
+            android:text="@string/move_clamp_forward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/move_clamp_forward"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="216dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="16dp"/>
+    <Button
+            android:text="@string/move_clamp_backward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/move_clamp_backward"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="216dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="136dp"/>
+
+    <Switch
+        android:id="@+id/switch1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:minHeight="48dp"
+        android:text="@string/secret_mode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/move_clamp_forward" />
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="409dp"
+        android:layout_height="401dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switch1">
+        <io.github.controlwear.virtual.joystick.android.JoystickView
+                android:layout_width="208dp"
+                android:layout_height="197dp"
+                app:JV_buttonColor="#FF6E40"
+                app:JV_buttonSizeRatio="15%"
+                app:JV_borderColor="#00796B"
+                app:JV_backgroundColor="#009688"
+                app:JV_borderWidth="4dp"
+                app:JV_fixedCenter="false" android:id="@+id/joystick"/>
+    </FrameLayout>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:text="Name"
+            android:ems="10"
+            android:id="@+id/macfield" tools:layout_editor_absoluteY="64dp"
+            tools:layout_editor_absoluteX="142dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
