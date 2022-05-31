@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -33,12 +34,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MainActivity extends AppCompatActivity {
-    private static final UUID BT_MODULE_UUID = UUID.fromString("d052b734-5ba8-4e4a-ae17-27a15dddf829");
+    private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private final static int REQUEST_ENABLE_BT = 1;
 
     private BluetoothAdapter adapter;
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         this.devices.forEach(d -> {
             Log.e("MainActivity", "Name: " + d.getName() + ", MAC: " + d.getAddress());
         });
-        Optional<BluetoothDevice> optional = this.devices.stream().filter(d -> d.getName().equals("HC-05 TEE")).findFirst();
+        Optional<BluetoothDevice> optional = this.devices.stream().filter(d -> d.getName().equals("TEEBot")).findFirst();
         if(!optional.isPresent()) {
             Log.e("MainActivity", "Bluetooth device is not linked !");
             Toast.makeText(this, "Vous devez appairer le robot dans les paramètres bluetooth !", Toast.LENGTH_LONG).show();
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.textView.setText("Appareil: " + device.getAddress());
 
-        this.connectThread = new ConnectThread(device);
+        this.connectThread = new ConnectThread(this, device);
         this.connectThread.start();
 
         this.openClampBtn.setOnClickListener(v -> {
@@ -190,13 +190,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class ConnectThread extends Thread {
+        private final MainActivity activity;
         private final BluetoothSocket socket;
         private final InputStream inputStream;
         private final OutputStream outputStream;
+        private long lastSent = 0;
 
-        public ConnectThread(BluetoothDevice device) {
+        private final Queue<byte[]> queue = new ConcurrentLinkedQueue<>();
+
+        public ConnectThread(MainActivity activity, BluetoothDevice device) {
+            Log.e("ConnectThread", device.getName());
+
+            this.activity = activity;
+
             try {
-                this.socket = device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
+                this.socket = device.createInsecureRfcommSocketToServiceRecord(BT_MODULE_UUID);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -216,17 +224,28 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
+            Log.e("ConnectThread", "run");
            if(!this.socket.isConnected()) {
                try {
                    this.socket.connect();
+                   this.activity.textView.setTextColor(Color.GREEN);
                } catch (IOException e) {
                    try {
                        this.socket.close();
                    } catch (IOException ex) {
                        throw new RuntimeException(ex);
                    }
+
+                   Log.e("ConnectThread", "Failed to connect : " + e.getMessage());
+                   this.activity.textView.setTextColor(Color.RED);
                }
            }
+               while(true) {
+                   if(this.socket.isConnected() && this.queue.size() > 0) {
+                       this.write(this.queue.las());
+                   }
+               }
+
         }
 
         public void write(JsonObject json) {
@@ -234,10 +253,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void write(byte[] data) {
-            try {
-                this.outputStream.write(data);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if(this.socket.isConnected() && System.currentTimeMillis() - this.lastSent > 250) {
+                try {
+                    Log.e("MainActivity", "Sending " + new String(data));
+                    this.lastSent = System.currentTimeMillis();
+                    this.outputStream.write(data);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                this.queue.add(data);
             }
         }
 
